@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trade Calc Pro</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f2f2f7;
+            --card-bg: #ffffff;
+            --text-main: #1c1c1e;
+            --text-sub: #8e8e93;
+            /* Tone màu Cam Đất (Terracotta) - Chuẩn Hỏa sinh Thổ */
+            --accent: #d96a41; 
+            --accent-dark: #b84f2b;
+            --border: #e5e5ea;
+            --danger: #ff3b30;
+            --warning: #ffcc00;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg-color); 
+            color: var(--text-main);
+            padding: 20px; 
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container { width: 100%; max-width: 400px; }
+        
+        h2 { 
+            text-align: center; 
+            font-size: 24px; 
+            margin-bottom: 20px; 
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .card { 
+            background: var(--card-bg); 
+            padding: 24px; 
+            border-radius: 20px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08); 
+        }
+
+        .input-group { margin-bottom: 20px; }
+        
+        label { 
+            display: flex; 
+            align-items: center;
+            font-size: 15px; 
+            font-weight: 600; 
+            margin-bottom: 8px; 
+            color: #3a3a3c; 
+        }
+        
+        label i { 
+            margin-right: 8px; 
+            color: var(--accent);
+            width: 20px;
+            text-align: center;
+        }
+
+        input[type="number"], select { 
+            width: 100%; 
+            padding: 14px; 
+            border: 1px solid var(--border); 
+            border-radius: 12px; 
+            font-size: 16px; 
+            box-sizing: border-box; 
+            background: #fcfcfc;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
+        }
+        
+        /* Viền sáng Cam Đất khi bấm vào ô nhập liệu */
+        input:focus, select:focus { 
+            outline: none; 
+            border-color: var(--accent); 
+            background: #fff; 
+            box-shadow: 0 0 0 3px rgba(217, 106, 65, 0.2); 
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .badge {
+            background: var(--accent);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #e5e5ea;
+            border-radius: 5px;
+            outline: none;
+            margin-top: 10px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            cursor: pointer;
+            border: 2px solid var(--accent);
+        }
+
+        button { 
+            width: 100%; 
+            /* Gradient Cam Đất cho nút bấm */
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: white; 
+            border: none; 
+            padding: 16px; 
+            border-radius: 14px; 
+            font-size: 17px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: transform 0.1s, opacity 0.2s, box-shadow 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(217, 106, 65, 0.3);
+        }
+        button:active { transform: scale(0.98); opacity: 0.9; box-shadow: 0 2px 6px rgba(217, 106, 65, 0.2); }
+
+        #resultBox { 
+            margin-top: 24px; 
+            padding: 20px; 
+            /* Đổi nền khung kết quả sang tone cam/đất nhạt */
+            background: #fcf4f2; 
+            border-radius: 16px; 
+            display: none; 
+            border: 1px solid #fad9cd;
+        }
+
+        .result-item { 
+            margin-bottom: 12px; 
+            font-size: 15px; 
+            display: flex; 
+            justify-content: space-between;
+            align-items: center;
+            color: #48484a;
+        }
+        .result-item:last-child { margin-bottom: 0; }
+        .result-item span { 
+            font-weight: 700; 
+            color: var(--accent-dark); 
+            font-size: 17px;
+            background: #fff;
+            padding: 4px 10px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .error-msg { 
+            color: var(--danger); 
+            font-size: 14px; 
+            text-align: center; 
+            margin-top: 12px; 
+            display: none; 
+            font-weight: 500;
+        }
+
+        .type-short { color: var(--danger) !important; }
+        /* Giữ màu xanh lá cho riêng icon lệnh Long cho đúng chuẩn trading */
+        .type-long { color: #34c759 !important; } 
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2><i class="fa-solid fa-chart-pie" style="color: var(--accent);"></i> Position Calc</h2>
+        <div class="card">
+            <form id="calcForm">
+                <div class="input-group">
+                    <label><i class="fa-solid fa-arrows-up-down"></i> Vị thế</label>
+                    <select id="type">
+                        <option value="long">Long (Mua lên)</option>
+                        <option value="short">Short (Bán xuống)</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fa-solid fa-shield-heart" style="color: var(--accent);"></i> Rủi ro chấp nhận ($)</label>
+                    <input type="number" id="risk" required step="any" placeholder="VD: 50">
+                </div>
+                
+                <div class="input-group">
+                    <div class="slider-header">
+                        <label><i class="fa-solid fa-rocket" style="color: var(--warning);"></i> Đòn bẩy</label>
+                        <span class="badge" id="leverageDisplay">10x</span>
+                    </div>
+                    <input type="range" id="leverage" min="1" max="125" value="10" step="1">
+                </div>
+
+                <div class="input-group">
+                    <label><i class="fa-solid fa-crosshairs"></i> Giá Entry</label>
+                    <input type="number" id="entry" required step="any" placeholder="VD: 60000">
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fa-solid fa-stopwatch type-short"></i> Stop Loss (STL)</label>
+                    <input type="number" id="stl" required step="any" placeholder="VD: 59000">
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fa-solid fa-sack-dollar type-long"></i> Take Profit (TP)</label>
+                    <input type="number" id="tp" step="any" placeholder="VD: 63000 (Tùy chọn)">
+                </div>
+
+                <button type="submit"><i class="fa-solid fa-calculator"></i> Tính Toán</button>
+                <div id="errorMsg" class="error-msg"></div>
+            </form>
+
+            <div id="resultBox">
+                <div class="result-item">Tổng vị thế (Size): <span id="posSize">0</span></div>
+                <div class="result-item">Ký quỹ (Margin): <span id="margin">0</span></div>
+                <div class="result-item">Khối lượng (Coin): <span id="volume">0</span></div>
+                <div class="result-item">Tỷ lệ R:R: <span id="rr">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const leverageInput = document.getElementById('leverage');
+        const leverageDisplay = document.getElementById('leverageDisplay');
+        
+        leverageInput.addEventListener('input', function() {
+            leverageDisplay.innerText = this.value + 'x';
+        });
+
+        const formatMoney = (num) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+
+        document.getElementById('calcForm').addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            
+            const type = document.getElementById('type').value;
+            const risk = parseFloat(document.getElementById('risk').value);
+            const leverage = parseFloat(leverageInput.value); 
+            const entry = parseFloat(document.getElementById('entry').value);
+            const stl = parseFloat(document.getElementById('stl').value);
+            const tp = parseFloat(document.getElementById('tp').value);
+            
+            const errorMsg = document.getElementById('errorMsg');
+            const resultBox = document.getElementById('resultBox');
+
+            errorMsg.style.display = 'none';
+            resultBox.style.display = 'none';
+
+            if (type === 'long' && stl >= entry) {
+                showError("Lệnh Long: Stop Loss phải nhỏ hơn Entry!"); return;
+            }
+            if (type === 'short' && stl <= entry) {
+                showError("Lệnh Short: Stop Loss phải lớn hơn Entry!"); return;
+            }
+
+            const stopDistance = Math.abs(entry - stl);
+            const riskPercentage = stopDistance / entry;
+
+            const positionSize = risk / riskPercentage;
+            const margin = positionSize / leverage;
+            const volume = positionSize / entry;
+
+            let rrText = "Chưa nhập TP";
+            if (tp) {
+                const profitDistance = Math.abs(tp - entry);
+                const rr = profitDistance / stopDistance;
+                rrText = "1 : " + rr.toFixed(2);
+            }
+
+            document.getElementById('posSize').innerText = formatMoney(positionSize);
+            document.getElementById('margin').innerText = formatMoney(margin);
+            document.getElementById('volume').innerText = volume.toFixed(5);
+            document.getElementById('rr').innerText = rrText;
+            
+            resultBox.style.display = 'block';
+        });
+
+        function showError(msg) {
+            const errorElement = document.getElementById('errorMsg');
+            errorElement.innerText = '<i class="fa-solid fa-triangle-exclamation"></i> ' + msg;
+            errorElement.innerHTML = errorElement.innerText; 
+            errorElement.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
